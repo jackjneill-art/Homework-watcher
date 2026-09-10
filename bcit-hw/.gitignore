@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+
+# Secrets — the feed token lives here. Never commit.
+.env
+.env.local
+.env*.local
+
+*.tsbuildinfo
+next-env.d.ts
+.vercel
