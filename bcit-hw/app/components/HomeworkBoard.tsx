@@ -182,7 +182,11 @@ export function HomeworkBoard({
         )}
 
         <p className="substat">
-          <span>{lastCheckedLabel(lastChecked)}</span>
+          {/* "checked X min ago" is computed from Date.now() — the server-
+              rendered and client-hydrated values can legitimately differ by
+              the request's latency, which React otherwise flags as a
+              hydration mismatch. The client's value is the correct one. */}
+          <span suppressHydrationWarning>{lastCheckedLabel(lastChecked)}</span>
           {newCount > 0 && <span className="dot-sep">{newCount} new since yesterday</span>}
           {visibleRows.length > 0 && <span className="dot-sep">{visibleRows.length} tracked</span>}
         </p>
