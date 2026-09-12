@@ -65,6 +65,11 @@ END:VEVENT
 END:VCALENDAR`;
 const orgUnit = parseFeed(orgUnitFeed);
 check("falls back to org unit id when no course code exists", orgUnit["ou1@x"].course, "Course 1239803");
+check(
+  "pulls the click-through link out of the description when URL is blank",
+  orgUnit["ou1@x"].url,
+  "https://learn.bcit.ca/d2l/le/calendar/1239803/event/1/detailsview?ou=1239803#1",
+);
 
 /* ---- filtering out timetabled classes ---- */
 const mixed = `BEGIN:VCALENDAR

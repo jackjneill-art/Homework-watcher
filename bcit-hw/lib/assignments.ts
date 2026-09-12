@@ -61,6 +61,19 @@ function courseFromOrgUnit(description: string): string {
   return ORG_UNIT_NAMES[match[1]] ?? `Course ${match[1]}`;
 }
 
+/**
+ * This feed also leaves the ICS URL property blank — the only link back to
+ * Brightspace is a "View event - https://..." line inside the description.
+ * Without this, titles render as plain text with nowhere to click, which
+ * also means there's no way to tell two "Course 1230765"-style ids apart by
+ * eye; opening the real event is how you'd confirm which course is which.
+ */
+const VIEW_EVENT_URL = /View event - (https?:\/\/\S+)/;
+
+function urlFromDescription(description: string): string {
+  return VIEW_EVENT_URL.exec(description)?.[1] ?? "";
+}
+
 export function looksLikeWork(title: string, description = ""): boolean {
   const blob = `${title} ${description}`.toLowerCase();
   return WORK_HINTS.some((hint) => blob.includes(hint));
@@ -134,12 +147,14 @@ export function normalize(
       (typeof ev.UID === "string" && ev.UID) ||
       `${summary}|${dueDate ? dueDate.toISOString() : "nodate"}`;
 
+    const feedUrl = typeof ev.URL === "string" ? ev.URL : "";
+
     items[uid] = {
       uid,
       title,
       course,
       due: dueDate ? dueDate.toISOString() : null,
-      url: typeof ev.URL === "string" ? ev.URL : "",
+      url: feedUrl || urlFromDescription(description),
       description: description.slice(0, 500),
       rawSummary: summary,
     };
