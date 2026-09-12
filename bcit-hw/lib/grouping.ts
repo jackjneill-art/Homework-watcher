@@ -151,3 +151,56 @@ export function relativeLabel(days: number | null): string {
   if (days <= 13) return "next week";
   return `in ${Math.round(days / 7)} weeks`;
 }
+
+export interface DayColumn {
+  /** 0 = today, matching AssignmentRow.daysUntil's own convention. */
+  offset: number;
+  items: AssignmentRow[];
+}
+
+/**
+ * The calendar view's rolling 7-day window (today..+6), with anything
+ * outside it — overdue, further out, or undated — bucketed separately so
+ * nothing silently disappears just because it doesn't fit a day column.
+ */
+export function groupByDay(rows: AssignmentRow[]): {
+  overdue: AssignmentRow[];
+  days: DayColumn[];
+  later: AssignmentRow[];
+} {
+  const overdue: AssignmentRow[] = [];
+  const days: DayColumn[] = Array.from({ length: 7 }, (_, offset) => ({ offset, items: [] }));
+  const later: AssignmentRow[] = [];
+
+  for (const row of rows) {
+    const d = row.daysUntil;
+    if (d === null || d > 6) {
+      later.push(row);
+    } else if (d < 0) {
+      overdue.push(row);
+    } else {
+      days[d].items.push(row);
+    }
+  }
+
+  const byDue = (a: AssignmentRow, b: AssignmentRow) => (a.due ?? "9999").localeCompare(b.due ?? "9999");
+  overdue.sort(byDue);
+  later.sort(byDue);
+  for (const day of days) day.items.sort(byDue);
+
+  return { overdue, days, later };
+}
+
+/** Weekday + date label for a day column, offset from today in Vancouver time. */
+export function dayLabel(offset: number, now: Date = new Date()): { weekday: string; date: string } {
+  const target = new Date(now.getTime() + offset * 86_400_000);
+  const weekday = new Intl.DateTimeFormat("en-US", { timeZone: "America/Vancouver", weekday: "short" }).format(
+    target,
+  );
+  const date = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Vancouver",
+    month: "short",
+    day: "numeric",
+  }).format(target);
+  return { weekday, date };
+}

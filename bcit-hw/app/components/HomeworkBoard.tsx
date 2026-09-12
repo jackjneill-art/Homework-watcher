@@ -9,8 +9,10 @@ import {
 } from "@/lib/grouping";
 import { isTestOrQuiz } from "@/lib/assignments";
 import { AssignmentCard } from "./AssignmentCard";
+import { CalendarView } from "./CalendarView";
 
 type Category = "all" | "assignments" | "tests" | "overdue" | "completed";
+type ViewMode = "list" | "calendar";
 
 /**
  * Sidebar order, top to bottom, as requested. "All assignments" is the true
@@ -31,6 +33,7 @@ const CATEGORIES: { value: Category; label: string }[] = [
  * single-user watcher, and needs no write path back to Brightspace or Blob.
  */
 const STORAGE_KEY = "bcit-hw-completed";
+const VIEW_KEY = "bcit-hw-view";
 
 function loadCompleted(): Set<string> {
   if (typeof window === "undefined") return new Set();
@@ -39,6 +42,15 @@ function loadCompleted(): Set<string> {
     return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
   } catch {
     return new Set();
+  }
+}
+
+function loadViewMode(): ViewMode {
+  if (typeof window === "undefined") return "list";
+  try {
+    return window.localStorage.getItem(VIEW_KEY) === "calendar" ? "calendar" : "list";
+  } catch {
+    return "list";
   }
 }
 
@@ -74,10 +86,12 @@ export function HomeworkBoard({
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [courseFilter, setCourseFilter] = useState<string | null>(null);
   const [category, setCategory] = useState<Category>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
 
-  // Empty on the server render; filled in once the browser's copy loads.
+  // Empty/default on the server render; filled in once the browser's copy loads.
   useEffect(() => {
     setCompleted(loadCompleted());
+    setViewMode(loadViewMode());
   }, []);
 
   function toggleComplete(uid: string) {
@@ -89,6 +103,18 @@ export function HomeworkBoard({
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
       } catch {
         // Private browsing or storage disabled — checkbox still works this session.
+      }
+      return next;
+    });
+  }
+
+  function toggleViewMode() {
+    setViewMode((prev) => {
+      const next = prev === "list" ? "calendar" : "list";
+      try {
+        window.localStorage.setItem(VIEW_KEY, next);
+      } catch {
+        // Private browsing or storage disabled — toggle still works this session.
       }
       return next;
     });
@@ -140,7 +166,12 @@ export function HomeworkBoard({
 
       <main className="page">
       <header className="masthead">
-        <p className="eyebrow">BCIT Learning Hub</p>
+        <div className="masthead-top">
+          <p className="eyebrow">BCIT Learning Hub</p>
+          <button type="button" className="view-toggle" onClick={toggleViewMode}>
+            {viewMode === "list" ? "Calendar view" : "List view"}
+          </button>
+        </div>
 
         {headline.count > 0 ? (
           <h1 className={`headline${headline.label.includes("overdue") ? " is-critical" : ""}`}>
@@ -218,24 +249,30 @@ export function HomeworkBoard({
         </div>
       )}
 
-      {groups.map((group) => (
-        <section className="section" data-bucket={group.bucket} key={group.bucket}>
-          <div className="section-head">
-            <h2 className="section-title">{group.label}</h2>
-            <span className="section-count">{group.items.length}</span>
-          </div>
-          <ul className="list">
-            {group.items.map((item) => (
-              <AssignmentCard
-                item={item}
-                key={item.uid}
-                completed={completed.has(item.uid)}
-                onToggleComplete={() => toggleComplete(item.uid)}
-              />
-            ))}
-          </ul>
-        </section>
-      ))}
+      {groups.length > 0 && viewMode === "calendar" && (
+        <CalendarView rows={visibleRows} completed={completed} onToggleComplete={toggleComplete} />
+      )}
+
+      {groups.length > 0 &&
+        viewMode === "list" &&
+        groups.map((group) => (
+          <section className="section" data-bucket={group.bucket} key={group.bucket}>
+            <div className="section-head">
+              <h2 className="section-title">{group.label}</h2>
+              <span className="section-count">{group.items.length}</span>
+            </div>
+            <ul className="list">
+              {group.items.map((item) => (
+                <AssignmentCard
+                  item={item}
+                  key={item.uid}
+                  completed={completed.has(item.uid)}
+                  onToggleComplete={() => toggleComplete(item.uid)}
+                />
+              ))}
+            </ul>
+          </section>
+        ))}
 
       <footer className="foot">
         <span>Checked every morning from your Brightspace calendar feed.</span>
