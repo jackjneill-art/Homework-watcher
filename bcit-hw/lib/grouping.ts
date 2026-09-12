@@ -44,7 +44,7 @@ export function courseColorIndex(course: string): number {
   return hash % COURSE_COLORS.length;
 }
 
-export type Bucket = "overdue" | "today" | "tomorrow" | "week" | "later" | "undated";
+export type Bucket = "overdue" | "today" | "tomorrow" | "week" | "later" | "undated" | "done";
 
 export const BUCKET_LABELS: Record<Bucket, string> = {
   overdue: "Overdue",
@@ -53,10 +53,11 @@ export const BUCKET_LABELS: Record<Bucket, string> = {
   week: "This week",
   later: "Later",
   undated: "No due date",
+  done: "Completed",
 };
 
-/** Order sections appear on the page. */
-export const BUCKET_ORDER: Bucket[] = ["overdue", "today", "tomorrow", "week", "later", "undated"];
+/** Order sections appear on the page. Completed items always sink to the bottom. */
+export const BUCKET_ORDER: Bucket[] = ["overdue", "today", "tomorrow", "week", "later", "undated", "done"];
 
 export function bucketFor(days: number | null): Bucket {
   if (days === null) return "undated";
@@ -73,6 +74,7 @@ export function urgencyToken(bucket: Bucket): string {
     case "overdue": return "var(--status-critical)";
     case "today": return "var(--status-serious)";
     case "tomorrow": return "var(--status-warning)";
+    case "done": return "var(--new-fg)";
     default: return "var(--text-muted)";
   }
 }
@@ -83,11 +85,11 @@ export interface Group {
   items: AssignmentRow[];
 }
 
-export function groupByUrgency(rows: AssignmentRow[]): Group[] {
+export function groupByUrgency(rows: AssignmentRow[], completed?: Set<string>): Group[] {
   const buckets = new Map<Bucket, AssignmentRow[]>();
 
   for (const row of rows) {
-    const b = bucketFor(row.daysUntil);
+    const b = completed?.has(row.uid) ? "done" : bucketFor(row.daysUntil);
     if (!buckets.has(b)) buckets.set(b, []);
     buckets.get(b)!.push(row);
   }
@@ -103,13 +105,15 @@ export function groupByUrgency(rows: AssignmentRow[]): Group[] {
 }
 
 /** The one number worth putting at the top of the page. */
-export function headlineCount(rows: AssignmentRow[]): { count: number; label: string } {
-  const overdue = rows.filter((r) => (r.daysUntil ?? 99) < 0).length;
+export function headlineCount(rows: AssignmentRow[], completed?: Set<string>): { count: number; label: string } {
+  const outstanding = completed ? rows.filter((r) => !completed.has(r.uid)) : rows;
+
+  const overdue = outstanding.filter((r) => (r.daysUntil ?? 99) < 0).length;
   if (overdue > 0) {
     return { count: overdue, label: overdue === 1 ? "assignment overdue" : "assignments overdue" };
   }
 
-  const thisWeek = rows.filter((r) => {
+  const thisWeek = outstanding.filter((r) => {
     const d = r.daysUntil;
     return d !== null && d >= 0 && d <= 7;
   }).length;

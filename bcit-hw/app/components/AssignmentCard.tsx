@@ -9,23 +9,42 @@ import {
   type AssignmentRow,
 } from "@/lib/grouping";
 
-export function AssignmentCard({ item }: { item: AssignmentRow }) {
-  const bucket = bucketFor(item.daysUntil);
+export function AssignmentCard({
+  item,
+  completed,
+  onToggleComplete,
+}: {
+  item: AssignmentRow;
+  completed: boolean;
+  onToggleComplete: () => void;
+}) {
+  const bucket = completed ? "done" : bucketFor(item.daysUntil);
   const swatch = COURSE_COLORS[courseColorIndex(item.course)];
 
   return (
     <li className="card" data-urgency={bucket}>
       <div className="card-top">
-        <h3 className="card-title">
-          {item.url ? (
-            <a href={item.url} target="_blank" rel="noreferrer">
-              {item.title}
-            </a>
-          ) : (
-            item.title
-          )}
-        </h3>
-        {item.isNew && <span className="badge-new">NEW</span>}
+        <div className="card-heading">
+          <label className="card-check">
+            <input
+              type="checkbox"
+              checked={completed}
+              onChange={onToggleComplete}
+              aria-label={completed ? "Mark as not done" : "Mark as done"}
+            />
+          </label>
+
+          <h3 className="card-title">
+            {item.url ? (
+              <a href={item.url} target="_blank" rel="noreferrer">
+                {item.title}
+              </a>
+            ) : (
+              item.title
+            )}
+          </h3>
+        </div>
+        {item.isNew && !completed && <span className="badge-new">NEW</span>}
       </div>
 
       <div className="card-meta">
@@ -47,7 +66,7 @@ export function AssignmentCard({ item }: { item: AssignmentRow }) {
         <span className="due">{formatDue(item.due)}</span>
 
         <span className="relative" style={{ color: urgencyToken(bucket) }}>
-          {relativeLabel(item.daysUntil)}
+          {completed ? "Completed" : relativeLabel(item.daysUntil)}
         </span>
       </div>
 

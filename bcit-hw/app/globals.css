@@ -204,6 +204,7 @@ a {
 .section[data-bucket="overdue"] .section-title { color: var(--status-critical); }
 .section[data-bucket="today"] .section-title { color: var(--status-serious); }
 .section[data-bucket="tomorrow"] .section-title { color: var(--status-warning); }
+.section[data-bucket="done"] .section-title { color: var(--new-fg); }
 
 /* ---- cards ---- */
 
@@ -236,11 +237,36 @@ a {
   border-left: 3px solid var(--status-serious);
 }
 
+.card[data-urgency="done"] {
+  opacity: 0.7;
+}
+
 .card-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+}
+
+.card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.card-check {
+  flex: none;
+  display: inline-flex;
+  padding-top: 3px;
+}
+
+.card-check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--new-fg);
+  cursor: pointer;
 }
 
 .card-title {
@@ -249,6 +275,12 @@ a {
   font-weight: 550;
   line-height: 1.35;
   letter-spacing: -0.008em;
+}
+
+.card[data-urgency="done"] .card-title {
+  text-decoration: line-through;
+  text-decoration-color: var(--border-strong);
+  color: var(--text-secondary);
 }
 
 .card-title a {
