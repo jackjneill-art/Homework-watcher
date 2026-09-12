@@ -50,26 +50,10 @@ export function CalendarView({
   completed: Set<string>;
   onToggleComplete: (uid: string) => void;
 }) {
-  const { overdue, days, later } = groupByDay(rows);
+  const { days, later } = groupByDay(rows);
 
   return (
     <div className="calendar">
-      {overdue.length > 0 && (
-        <section className="calendar-strip" data-strip="overdue">
-          <h2 className="calendar-strip-title">Overdue</h2>
-          <ul className="day-list is-row">
-            {overdue.map((item) => (
-              <DayCard
-                item={item}
-                key={item.uid}
-                completed={completed.has(item.uid)}
-                onToggleComplete={() => onToggleComplete(item.uid)}
-              />
-            ))}
-          </ul>
-        </section>
-      )}
-
       <div className="calendar-grid">
         {days.map((day) => {
           const { weekday, date } = dayLabel(day.offset);

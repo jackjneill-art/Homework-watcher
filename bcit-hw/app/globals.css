@@ -509,10 +509,6 @@ a {
   color: var(--text-secondary);
 }
 
-.calendar-strip[data-strip="overdue"] .calendar-strip-title {
-  color: var(--status-critical);
-}
-
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
