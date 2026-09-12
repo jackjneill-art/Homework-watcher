@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
 import { formatDue } from "@/lib/assignments";
 import {
-  COURSE_COLORS,
-  courseColorIndex,
+  courseColor,
   bucketFor,
   urgencyToken,
   relativeLabel,
@@ -19,13 +18,13 @@ export function AssignmentCard({
   onToggleComplete: () => void;
 }) {
   const bucket = completed ? "done" : bucketFor(item.daysUntil);
-  const courseColor = item.course ? COURSE_COLORS[courseColorIndex(item.course)] : null;
+  const color = item.course ? courseColor(item.course) : null;
 
   return (
     <li
       className="card"
       data-urgency={bucket}
-      style={{ "--course-color": courseColor ?? "var(--border-strong)" } as CSSProperties}
+      style={{ "--course-color": color ?? "var(--border-strong)" } as CSSProperties}
     >
       <div className="card-top">
         <div className="card-heading">
@@ -54,7 +53,7 @@ export function AssignmentCard({
       <div className="card-meta">
         {item.course && (
           <span className="course-chip">
-            <span className="course-swatch" style={{ background: courseColor ?? undefined }} />
+            <span className="course-swatch" style={{ background: color ?? undefined }} />
             {item.course}
           </span>
         )}

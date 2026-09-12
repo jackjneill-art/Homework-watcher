@@ -171,7 +171,7 @@ check("formatDue reads naturally", formatDue(after["case@x"].due), "Sat, Sep 12,
 check("daysUntil counts calendar days", daysUntil(after["case@x"].due, now), 2);
 
 /* ---- grouping / presentation ---- */
-import { bucketFor, groupByUrgency, headlineCount, courseColorIndex, relativeLabel, type AssignmentRow } from "../lib/grouping";
+import { bucketFor, groupByUrgency, headlineCount, courseColorIndex, courseColor, COURSE_COLORS, relativeLabel, type AssignmentRow } from "../lib/grouping";
 
 check("bucket: overdue", bucketFor(-2), "overdue");
 check("bucket: today", bucketFor(0), "today");
@@ -198,6 +198,8 @@ check(
 );
 check("course colour is stable", courseColorIndex("MKTG 1102"), courseColorIndex("MKTG 1102"));
 check("different courses differ", courseColorIndex("COMM 1100") === courseColorIndex("MATH 1100"), false);
+check("manual override wins over the hash", courseColor("Business Math"), "#a685f2");
+check("unoverridden course still uses the hash palette", courseColor("MKTG 1102"), COURSE_COLORS[courseColorIndex("MKTG 1102")]);
 check("relative label: late", relativeLabel(-3), "3 days late");
 check("relative label: today", relativeLabel(0), "today");
 

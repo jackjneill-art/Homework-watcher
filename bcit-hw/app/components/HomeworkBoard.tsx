@@ -4,8 +4,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import {
   groupByUrgency,
   headlineCount,
-  COURSE_COLORS,
-  courseColorIndex,
+  courseColor,
   type AssignmentRow,
 } from "@/lib/grouping";
 import { isTestOrQuiz } from "@/lib/assignments";
@@ -173,14 +172,11 @@ export function HomeworkBoard({
                 <button
                   type="button"
                   className={`legend-item${courseFilter === course ? " is-active" : ""}`}
-                  style={{ "--course-color": COURSE_COLORS[courseColorIndex(course)] } as CSSProperties}
+                  style={{ "--course-color": courseColor(course) } as CSSProperties}
                   onClick={() => setCourseFilter(courseFilter === course ? null : course)}
                   aria-pressed={courseFilter === course}
                 >
-                  <span
-                    className="legend-swatch"
-                    style={{ background: COURSE_COLORS[courseColorIndex(course)] }}
-                  />
+                  <span className="legend-swatch" style={{ background: courseColor(course) }} />
                   {course}
                 </button>
               </li>

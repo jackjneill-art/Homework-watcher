@@ -46,6 +46,20 @@ export function courseColorIndex(course: string): number {
   return hash % COURSE_COLORS.length;
 }
 
+/**
+ * The hash above can put two different courses on the same colour by
+ * coincidence — it happened to Business Math and First Year Marketing
+ * Community Access. Overrides here win over the hash; fill in a course name
+ * and any COURSE_COLORS hex (or your own) to pin or fix a collision.
+ */
+export const COURSE_COLOR_OVERRIDES: Record<string, string> = {
+  "Business Math": "#a685f2", // violet
+};
+
+export function courseColor(course: string): string {
+  return COURSE_COLOR_OVERRIDES[course] ?? COURSE_COLORS[courseColorIndex(course)];
+}
+
 export type Bucket = "overdue" | "today" | "tomorrow" | "week" | "later" | "undated" | "done";
 
 export const BUCKET_LABELS: Record<Bucket, string> = {
