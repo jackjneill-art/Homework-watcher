@@ -60,15 +60,30 @@ BEGIN:VEVENT
 UID:ou1@x
 SUMMARY:Week 1: A Sales Career?
 DTSTART:20260913T235900
-DESCRIPTION:On page 18 there is a quiz. View event - https://learn.bcit.ca/d2l/le/calendar/1239803/event/1/detailsview?ou=1239803#1
+DESCRIPTION:On page 18 there is a quiz. View event - https://learn.bcit.ca/d2l/le/calendar/9999999/event/1/detailsview?ou=9999999#1
 END:VEVENT
 END:VCALENDAR`;
 const orgUnit = parseFeed(orgUnitFeed);
-check("falls back to org unit id when no course code exists", orgUnit["ou1@x"].course, "Course 1239803");
+check("falls back to org unit id when no course code exists and no name is known", orgUnit["ou1@x"].course, "Course 9999999");
 check(
   "pulls the click-through link out of the description when URL is blank",
   orgUnit["ou1@x"].url,
-  "https://learn.bcit.ca/d2l/le/calendar/1239803/event/1/detailsview?ou=1239803#1",
+  "https://learn.bcit.ca/d2l/le/calendar/9999999/event/1/detailsview?ou=9999999#1",
+);
+
+const namedFeed = `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:named@x
+SUMMARY:Week 1: A Sales Career?
+DTSTART:20260913T235900
+DESCRIPTION:On page 18 there is a quiz. View event - https://learn.bcit.ca/d2l/le/calendar/1239803/event/1/detailsview?ou=1239803#1
+END:VEVENT
+END:VCALENDAR`;
+const named = parseFeed(namedFeed);
+check(
+  "known org unit id resolves to its real course name",
+  named["named@x"].course,
+  "Professional Sales Skills and Customer Relationship Management",
 );
 
 /* ---- filtering out timetabled classes ---- */

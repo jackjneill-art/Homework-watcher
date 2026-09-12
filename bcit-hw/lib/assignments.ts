@@ -53,7 +53,12 @@ const COURSE_CODE = /\b([A-Z]{4}\s?\d{4})\b/;
  * number itself so grouping/coloring still works before you do.
  */
 const ORG_UNIT = /\bou=(\d+)\b/;
-export const ORG_UNIT_NAMES: Record<string, string> = {};
+export const ORG_UNIT_NAMES: Record<string, string> = {
+  "253727": "First Year Marketing Community Access",
+  "1239803": "Professional Sales Skills and Customer Relationship Management",
+  "1230765": "Business Communication",
+  "1230837": "Business Math",
+};
 
 function courseFromOrgUnit(description: string): string {
   const match = ORG_UNIT.exec(description);
