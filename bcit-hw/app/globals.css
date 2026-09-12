@@ -649,3 +649,9 @@ a {
   gap: 6px 14px;
   justify-content: space-between;
 }
+
+.foot-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

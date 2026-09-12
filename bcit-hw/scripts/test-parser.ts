@@ -203,5 +203,29 @@ check("unoverridden course still uses the hash palette", courseColor("MKTG 1102"
 check("relative label: late", relativeLabel(-3), "3 days late");
 check("relative label: today", relativeLabel(0), "today");
 
+/* ---- ICS feed ---- */
+import { buildICS } from "../lib/ics";
+
+const icsRows: AssignmentRow[] = [
+  {
+    uid: "a,b;c\\d",
+    title: "Essay; draft, notes\nsecond line",
+    course: "COMM 1100",
+    due: "2026-09-15T23:59:00.000Z",
+    url: "https://learn.bcit.ca/x",
+    description: "line one\nline two",
+    daysUntil: 3,
+    isNew: false,
+  },
+  { uid: "no-due", title: "Undated", course: "", due: null, url: "", daysUntil: null, isNew: false },
+];
+const ics = buildICS(icsRows);
+
+check("DTSTART strips punctuation from the ISO date", ics.includes("DTSTART:20260915T235900Z"), true);
+check("summary includes the course", ics.includes("SUMMARY:Essay\\; draft\\, notes\\nsecond line (COMM 1100)"), true);
+check("UID is namespaced so it can't collide with the source feed", ics.includes("UID:a\\,b\\;c\\\\d@bcit-homework-watcher"), true);
+check("undated items are skipped (no DTSTART to give them)", ics.includes("Undated"), false);
+check("well-formed VCALENDAR wrapper", ics.startsWith("BEGIN:VCALENDAR") && ics.trimEnd().endsWith("END:VCALENDAR"), true);
+
 console.log(failures === 0 ? "\nALL TESTS PASSED" : `\n${failures} FAILURE(S)`);
 process.exit(failures === 0 ? 0 : 1);
