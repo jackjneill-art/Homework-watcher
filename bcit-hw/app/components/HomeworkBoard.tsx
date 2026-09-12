@@ -11,10 +11,15 @@ import {
 import { isTestOrQuiz } from "@/lib/assignments";
 import { AssignmentCard } from "./AssignmentCard";
 
-type Category = "assignments" | "tests" | "overdue" | "completed";
+type Category = "all" | "assignments" | "tests" | "overdue" | "completed";
 
-/** Sidebar order, top to bottom, as requested. */
+/**
+ * Sidebar order, top to bottom, as requested. "All assignments" is the true
+ * unfiltered list; "Assignments" now excludes tests/quizzes so the two read
+ * as distinct options instead of duplicates.
+ */
 const CATEGORIES: { value: Category; label: string }[] = [
+  { value: "all", label: "All assignments" },
   { value: "assignments", label: "Assignments" },
   { value: "tests", label: "Tests and quizzes" },
   { value: "overdue", label: "Overdue assignments" },
@@ -69,7 +74,7 @@ export function HomeworkBoard({
 }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [courseFilter, setCourseFilter] = useState<string | null>(null);
-  const [category, setCategory] = useState<Category>("assignments");
+  const [category, setCategory] = useState<Category>("all");
 
   // Empty on the server render; filled in once the browser's copy loads.
   useEffect(() => {
@@ -97,10 +102,12 @@ export function HomeworkBoard({
     a.localeCompare(b),
   );
 
-  // "Assignments" is the full list; the other three are views onto it, not a
-  // strict partition — a completed quiz still shows up under Tests, etc.
+  // "All assignments" is the full list. The rest are views onto it, not a
+  // strict partition — e.g. a completed quiz still shows up under Tests if
+  // you switch to that view; only "Assignments" itself excludes tests/quizzes.
   const categoryRows = rows.filter((r) => {
     switch (category) {
+      case "assignments": return !isTestOrQuiz(r.title, r.description);
       case "tests": return isTestOrQuiz(r.title, r.description);
       case "overdue": return (r.daysUntil ?? 99) < 0 && !completed.has(r.uid);
       case "completed": return completed.has(r.uid);
@@ -204,9 +211,9 @@ export function HomeworkBoard({
 
       {available && hasPayload && groups.length === 0 && (
         <div className="panel">
-          <h2>{category === "assignments" ? "All clear" : "Nothing here"}</h2>
+          <h2>{category === "all" ? "All clear" : "Nothing here"}</h2>
           <p>
-            {category === "assignments"
+            {category === "all"
               ? "Nothing outstanding in your Learning Hub calendar right now."
               : `No items match "${CATEGORIES.find((c) => c.value === category)?.label}"${
                   courseFilter ? ` for ${courseFilter}` : ""
