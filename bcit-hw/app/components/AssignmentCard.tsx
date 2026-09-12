@@ -19,10 +19,14 @@ export function AssignmentCard({
   onToggleComplete: () => void;
 }) {
   const bucket = completed ? "done" : bucketFor(item.daysUntil);
-  const swatch = COURSE_COLORS[courseColorIndex(item.course)];
+  const courseColor = item.course ? COURSE_COLORS[courseColorIndex(item.course)] : null;
 
   return (
-    <li className="card" data-urgency={bucket}>
+    <li
+      className="card"
+      data-urgency={bucket}
+      style={{ "--course-color": courseColor ?? "var(--border-strong)" } as CSSProperties}
+    >
       <div className="card-top">
         <div className="card-heading">
           <label className="card-check">
@@ -50,15 +54,7 @@ export function AssignmentCard({
       <div className="card-meta">
         {item.course && (
           <span className="course-chip">
-            <span
-              className="course-swatch"
-              style={
-                {
-                  "--course-light": swatch.light,
-                  "--course-dark": swatch.dark,
-                } as CSSProperties
-              }
-            />
+            <span className="course-swatch" style={{ background: courseColor ?? undefined }} />
             {item.course}
           </span>
         )}

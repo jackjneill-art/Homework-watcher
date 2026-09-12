@@ -109,30 +109,39 @@ out of the feed, and diffing two days of data with no false positives.
 
 ## The interface
 
-`app/page.tsx` groups assignments into urgency sections — Overdue, Due today,
-Due tomorrow, This week, Later — with empty sections omitted, so the page is
-only as long as the work is.
+`app/page.tsx` fetches state server-side and hands it to `HomeworkBoard`
+(`app/components/HomeworkBoard.tsx`), a client component that groups
+assignments into sections — Overdue, Due today, Due tomorrow, This week,
+Later, Completed — with empty sections omitted, so the page is only as long
+as the work is.
 
 Two colour jobs are kept deliberately separate, and it's worth preserving this
 if you extend the design:
 
 - **Course is identity.** Each course gets a stable hue from a fixed palette
-  (`lib/grouping.ts`), shown as a small chip. The same course keeps the same
-  colour as items come and go.
-- **Urgency is state.** Red/amber are reserved for the countdown text and a
-  left stripe on overdue and due-today cards only. Spending a stripe on every
-  card would flatten the hierarchy and make none of them read as urgent.
+  (`lib/grouping.ts`), shown as the card's left border and a small chip. The
+  same course keeps the same colour as items come and go.
+- **Urgency is state.** Red/amber are reserved for section titles and the
+  countdown text — the left border is spent on course identity instead, so
+  there's no separate urgency stripe.
 
 Type is IBM Plex Sans with IBM Plex Mono carrying every temporal value — due
-dates, countdowns, counts — so digits align down the column. Both themes are
-defined; dark mode is a real palette, not an inversion.
+dates, countdowns, counts — so digits align down the column. The site is
+black-only; there's no light theme.
 
 Anything more than a week overdue drops off the page automatically so stale
 items don't permanently occupy the top.
 
+Each card has a checkbox. Checking it off moves the item into a Completed
+section instead of counting toward the overdue headline. That state lives in
+the browser's `localStorage` (`bcit-hw-completed` key) rather than in Blob or
+Brightspace — the calendar feed is read-only, and the watcher's Blob snapshot
+is reserved for the diff baseline — so it's per-browser, not synced across
+devices.
+
 Worth building next:
 
-- A "done" checkbox — needs its own storage, since the calendar feed is read-only
+- Sync "done" state across devices (would need its own backend, not localStorage)
 - Filter by course
 - A week view that lines up against your class schedule
 

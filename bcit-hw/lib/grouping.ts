@@ -22,16 +22,18 @@ export interface AssignmentRow {
 /**
  * Identity palette, in fixed order. Colours are assigned per course and never
  * cycled mid-list, so a course keeps its colour as items come and go.
+ * Tuned for a black background; pure red is deliberately excluded so a
+ * course's colour is never mistaken for the overdue status colour.
  */
 export const COURSE_COLORS = [
-  { light: "#2a78d6", dark: "#3987e5" }, // blue
-  { light: "#eb6834", dark: "#d95926" }, // orange
-  { light: "#1baf7a", dark: "#199e70" }, // aqua
-  { light: "#eda100", dark: "#c98500" }, // yellow
-  { light: "#e87ba4", dark: "#d55181" }, // magenta
-  { light: "#4a3aa7", dark: "#9085e9" }, // violet
-  { light: "#008300", dark: "#008300" }, // green
-  { light: "#e34948", dark: "#e66767" }, // red
+  "#4c8ef0", // blue
+  "#f2994a", // orange
+  "#2ecc9c", // teal
+  "#f2c94c", // yellow
+  "#f277b0", // pink
+  "#a685f2", // violet
+  "#6fcf58", // green
+  "#56c8d8", // cyan
 ];
 
 /** Stable hash so a course maps to the same colour on every render. */

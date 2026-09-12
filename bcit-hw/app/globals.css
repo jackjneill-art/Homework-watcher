@@ -1,64 +1,43 @@
 /* ---------------------------------------------------------------------------
    Homework Watcher — design tokens.
 
-   Light is the base. Dark redefines values only, so every colour is defined
-   once per mode and nothing inherits the host's ground.
+   Black is the only theme.
 
    Two colour jobs, kept strictly apart:
-     course  = identity  -> a stable hue per course, shown as a small chip
-     urgency = state     -> reserved status colours, shown on the countdown
+     course  = identity  -> a stable hue per course, shown as the card's left
+               border and a small chip
+     urgency = state     -> reserved status colours, shown on section titles
+               and the countdown text (the left border is spent on course
+               identity instead, so urgency no longer gets a border stripe)
    --------------------------------------------------------------------------- */
 
+/* Black is the only theme — no light mode, no prefers-color-scheme split. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --bg: #f6f6f3;
-  --surface: #ffffff;
-  --border: #e5e5dd;
-  --border-strong: #d3d3c8;
+  --bg: #000000;
+  --surface: #0a0a09;
+  --border: #232320;
+  --border-strong: #3a3a35;
 
-  --text-primary: #16160f;
-  --text-secondary: #4e4e44;
-  --text-muted: #78786c;
+  --text-primary: #f6f6f0;
+  --text-secondary: #bab9ad;
+  --text-muted: #8b8b80;
 
-  --accent: #2a78d6;
+  --accent: #3987e5;
 
-  --status-critical: #c5303a;
-  --status-serious: #b8431a;
-  --status-warning: #8a6000;
+  --status-critical: #f2726f;
+  --status-serious: #ef8a4f;
+  --status-warning: #e0a63a;
 
-  --new-fg: #0f6b4a;
-  --new-bg: #ddf2e8;
+  --new-fg: #7fdcb4;
+  --new-bg: #14332a;
 
   --radius: 10px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    --bg: #121210;
-    --surface: #1c1c19;
-    --border: #2f2f2a;
-    --border-strong: #43423b;
-
-    --text-primary: #f6f6f0;
-    --text-secondary: #bab9ad;
-    --text-muted: #8b8b80;
-
-    --accent: #3987e5;
-
-    --status-critical: #f2726f;
-    --status-serious: #ef8a4f;
-    --status-warning: #e0a63a;
-
-    --new-fg: #7fdcb4;
-    --new-bg: #14332a;
-  }
 }
 
 * {
@@ -219,22 +198,17 @@ a {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--course-color, var(--border-strong));
   border-radius: var(--radius);
   padding: 13px 15px;
-  transition: border-color 0.15s ease;
+  transition: border-top-color 0.15s ease, border-right-color 0.15s ease, border-bottom-color 0.15s ease;
 }
 
+/* Course owns the left border, so hover only lifts the other three sides. */
 .card:hover {
-  border-color: var(--border-strong);
-}
-
-/* Severity stripe is spent only where it earns attention — not on every card. */
-.card[data-urgency="overdue"] {
-  border-left: 3px solid var(--status-critical);
-}
-
-.card[data-urgency="today"] {
-  border-left: 3px solid var(--status-serious);
+  border-top-color: var(--border-strong);
+  border-right-color: var(--border-strong);
+  border-bottom-color: var(--border-strong);
 }
 
 .card[data-urgency="done"] {
@@ -329,13 +303,7 @@ a {
   height: 7px;
   border-radius: 2px;
   flex: none;
-  background: var(--course-light, var(--accent));
-}
-
-@media (prefers-color-scheme: dark) {
-  .course-swatch {
-    background: var(--course-dark, var(--accent));
-  }
+  background: var(--accent);
 }
 
 .relative {
