@@ -41,8 +41,15 @@ export interface LoadResult {
 
 const EMPTY: WatcherState = { lastChecked: null, items: {}, latest: null };
 
+function blobConfigured(): boolean {
+  // Older stores authenticate with a long-lived BLOB_READ_WRITE_TOKEN.
+  // Newer ones authenticate via OIDC using just BLOB_STORE_ID, which
+  // @vercel/blob picks up automatically — see the `token` option docs.
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+}
+
 export async function loadState(): Promise<LoadResult> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!blobConfigured()) {
     return { state: EMPTY, available: false, firstRun: false };
   }
 
@@ -76,7 +83,7 @@ export async function loadState(): Promise<LoadResult> {
 }
 
 export async function saveState(state: WatcherState): Promise<boolean> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return false;
+  if (!blobConfigured()) return false;
 
   try {
     await put(STATE_PATH, JSON.stringify(state, null, 2), {
