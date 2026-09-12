@@ -49,8 +49,7 @@ strangers out of your notifications, so don't use `jack-homework`.
 | `BCIT_ICS_URL` | Your Brightspace subscribe link |
 | `NTFY_TOPIC` | The topic you just subscribed to |
 | `CRON_SECRET` | `openssl rand -hex 32` — stops strangers triggering your refresh |
-| `NEXT_PUBLIC_SITE_URL` | Your deployed URL, used as the notification tap target and the "Add to Google Calendar" link |
-| `ICS_FEED_TOKEN` | Optional — `openssl rand -hex 32` to keep `/calendar.ics` from being an openly guessable URL |
+| `NEXT_PUBLIC_SITE_URL` | Your deployed URL, used as the notification tap target |
 
 **5. Redeploy, then seed it:**
 
@@ -103,10 +102,6 @@ out of the feed, and diffing two days of data with no false positives.
 - **`/api/refresh` is protected by `CRON_SECRET`.** Vercel Cron sends it
   automatically. If the secret isn't set the route runs unauthenticated and the
   response includes `"unsecured": true` as a warning.
-- **`/calendar.ics` is protected by `ICS_FEED_TOKEN`** (a `?token=` query param,
-  since calendar apps can't send a custom header). Same fail-open tradeoff as
-  `CRON_SECRET` if you leave it unset — reasonable here since the feed only
-  ever contains due dates and titles, not credentials.
 - The Blob snapshot is stored privately — reads and writes both require the
   store's own auth (`BLOB_STORE_ID`/OIDC, or `BLOB_READ_WRITE_TOKEN` on older
   stores). Swap `lib/storage.ts` for Upstash Redis if you'd rather not use
@@ -144,17 +139,11 @@ Brightspace — the calendar feed is read-only, and the watcher's Blob snapshot
 is reserved for the diff baseline — so it's per-browser, not synced across
 devices.
 
-A "Calendar view" / "List view" toggle (top-right of the masthead) switches
-between the grouped list and a rolling 7-day grid (`app/components/CalendarView.tsx`).
-The footer's "Add to Google Calendar" link subscribes to `/calendar.ics`
-(`lib/ics.ts`) — an RFC 5545 feed of every tracked assignment with a due date,
-for Apple Calendar/Outlook too if you'd rather paste the raw URL there. It
-can't exclude items you've checked off, since "done" only lives in the
-browser's localStorage and the feed is generated server-side.
-
 Worth building next:
 
 - Sync "done" state across devices (would need its own backend, not localStorage)
+- Filter by course
+- A week view that lines up against your class schedule
 
 The shape you're rendering, from `GET /api/homework`:
 

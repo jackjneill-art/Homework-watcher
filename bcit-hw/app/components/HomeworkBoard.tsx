@@ -77,13 +77,11 @@ export function HomeworkBoard({
   lastChecked,
   available,
   hasPayload,
-  icsUrl,
 }: {
   rows: AssignmentRow[];
   lastChecked: string | null;
   available: boolean;
   hasPayload: boolean;
-  icsUrl: string | null;
 }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [courseFilter, setCourseFilter] = useState<string | null>(null);
@@ -283,16 +281,6 @@ export function HomeworkBoard({
       <footer className="foot">
         <span>Checked every morning from your Brightspace calendar feed.</span>
         <span>Only items with a due date appear here.</span>
-        {icsUrl && (
-          <a
-            className="foot-link"
-            href={`https://calendar.google.com/calendar/render?cid=${encodeURIComponent(icsUrl)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Add to Google Calendar
-          </a>
-        )}
       </footer>
       </main>
     </div>
