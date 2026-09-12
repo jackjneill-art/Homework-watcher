@@ -10,7 +10,7 @@
  * project touches storage.
  */
 
-import { put, list } from "@vercel/blob";
+import { put, list, get } from "@vercel/blob";
 import type { TrackedAssignment } from "./assignments";
 
 const STATE_PATH = "homework-state.json";
@@ -59,11 +59,13 @@ export async function loadState(): Promise<LoadResult> {
       return { state: EMPTY, available: true, firstRun: true };
     }
 
-    // Cache-bust: Blob URLs sit behind a CDN and we always want the newest write.
-    const res = await fetch(`${blobs[0].url}?t=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`blob fetch failed: ${res.status}`);
+    // The store is private, so blob content needs an authenticated fetch —
+    // a plain fetch(blobs[0].url) 403s. useCache: false always gets the
+    // latest write instead of a stale CDN copy.
+    const result = await get(STATE_PATH, { access: "private", useCache: false });
+    if (!result?.stream) throw new Error("blob fetch returned no content");
 
-    const parsed = (await res.json()) as Partial<WatcherState>;
+    const parsed = (await new Response(result.stream).json()) as Partial<WatcherState>;
     return {
       state: {
         lastChecked: parsed.lastChecked ?? null,
@@ -87,7 +89,7 @@ export async function saveState(state: WatcherState): Promise<boolean> {
 
   try {
     await put(STATE_PATH, JSON.stringify(state, null, 2), {
-      access: "public",
+      access: "private",
       contentType: "application/json",
       addRandomSuffix: false,
       allowOverwrite: true,

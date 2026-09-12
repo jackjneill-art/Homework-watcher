@@ -102,9 +102,10 @@ out of the feed, and diffing two days of data with no false positives.
 - **`/api/refresh` is protected by `CRON_SECRET`.** Vercel Cron sends it
   automatically. If the secret isn't set the route runs unauthenticated and the
   response includes `"unsecured": true` as a warning.
-- The Blob snapshot is stored at a public-but-unguessable URL. It holds
-  assignment titles and due dates — no credentials — but if that bothers you,
-  swap `lib/storage.ts` for Upstash Redis. Nothing else touches storage.
+- The Blob snapshot is stored privately — reads and writes both require the
+  store's own auth (`BLOB_STORE_ID`/OIDC, or `BLOB_READ_WRITE_TOKEN` on older
+  stores). Swap `lib/storage.ts` for Upstash Redis if you'd rather not use
+  Blob at all. Nothing else touches storage.
 
 ## The interface
 
