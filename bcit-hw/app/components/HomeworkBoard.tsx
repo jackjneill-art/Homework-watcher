@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { groupByUrgency, headlineCount, type AssignmentRow } from "@/lib/grouping";
+import {
+  groupByUrgency,
+  headlineCount,
+  COURSE_COLORS,
+  courseColorIndex,
+  type AssignmentRow,
+} from "@/lib/grouping";
 import { AssignmentCard } from "./AssignmentCard";
 
 /**
@@ -76,6 +82,12 @@ export function HomeworkBoard({
   const groups = groupByUrgency(rows, completed);
   const headline = headlineCount(rows, completed);
 
+  // Same colour rule the cards use (courseColorIndex), just listed once
+  // instead of re-derived from every card.
+  const courses = [...new Set(rows.map((r) => r.course).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+
   return (
     <main className="page">
       <header className="masthead">
@@ -94,6 +106,20 @@ export function HomeworkBoard({
           {newCount > 0 && <span className="dot-sep">{newCount} new since yesterday</span>}
           {rows.length > 0 && <span className="dot-sep">{rows.length} tracked</span>}
         </p>
+
+        {courses.length > 0 && (
+          <ul className="legend">
+            {courses.map((course) => (
+              <li className="legend-item" key={course}>
+                <span
+                  className="legend-swatch"
+                  style={{ background: COURSE_COLORS[courseColorIndex(course)] }}
+                />
+                {course}
+              </li>
+            ))}
+          </ul>
+        )}
       </header>
 
       {!available && (
