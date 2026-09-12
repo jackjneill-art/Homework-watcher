@@ -84,6 +84,14 @@ export function looksLikeWork(title: string, description = ""): boolean {
   return WORK_HINTS.some((hint) => blob.includes(hint));
 }
 
+const TEST_HINTS = ["quiz", "exam", "midterm", "final", "test"];
+
+/** Powers the sidebar's "Tests and quizzes" view. Same keyword-matching approach as looksLikeWork. */
+export function isTestOrQuiz(title: string, description = ""): boolean {
+  const blob = `${title} ${description}`.toLowerCase();
+  return TEST_HINTS.some((hint) => blob.includes(hint));
+}
+
 /**
  * Brightspace titles events like "Assignment 1 is due - Business Comm (COMM 1100)".
  * Split the human title from the course so the UI can group by course.

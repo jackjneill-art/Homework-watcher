@@ -1,5 +1,10 @@
-import { parseFeed, diffAssignments, renderSummary, daysUntil, formatDue } from "../lib/assignments";
+import { parseFeed, diffAssignments, renderSummary, daysUntil, formatDue, isTestOrQuiz } from "../lib/assignments";
 import { parseICalDate } from "../lib/ical";
+
+/* ---- sidebar's "Tests and quizzes" classifier ---- */
+check("quiz in title counts as a test", isTestOrQuiz("Module 2 Quiz"), true);
+check("exam in title counts as a test", isTestOrQuiz("Final Exam Review"), true);
+check("plain assignment is not a test", isTestOrQuiz("Self-Introduction Video - Due"), false);
 
 let failures = 0;
 function check(label: string, actual: unknown, expected: unknown) {

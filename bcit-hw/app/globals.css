@@ -78,16 +78,79 @@ a {
 
 /* --------------------------------------------------------------------------- */
 
-.page {
-  max-width: 660px;
+.layout {
+  max-width: 900px;
   margin: 0 auto;
   padding-inline: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+}
+
+.page {
+  flex: 1;
+  min-width: 0;
   padding-block: 34px 96px;
 }
 
 @media (min-width: 640px) {
   .page {
     padding-block-start: 60px;
+  }
+}
+
+/* ---- sidebar ---- */
+
+.sidebar {
+  flex: none;
+  width: 190px;
+  padding-block-start: 34px;
+  position: sticky;
+  top: 20px;
+}
+
+@media (min-width: 640px) {
+  .sidebar {
+    padding-block-start: 60px;
+  }
+}
+
+.sidebar-label {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.sidebar-select {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 10px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sidebar-select:hover {
+  border-color: var(--border-strong);
+}
+
+/* Below this, the picker sits above the list instead of beside it. */
+@media (max-width: 700px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+    padding-block-start: 20px;
   }
 }
 

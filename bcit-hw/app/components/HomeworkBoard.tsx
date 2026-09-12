@@ -8,7 +8,18 @@ import {
   courseColorIndex,
   type AssignmentRow,
 } from "@/lib/grouping";
+import { isTestOrQuiz } from "@/lib/assignments";
 import { AssignmentCard } from "./AssignmentCard";
+
+type Category = "assignments" | "tests" | "overdue" | "completed";
+
+/** Sidebar order, top to bottom, as requested. */
+const CATEGORIES: { value: Category; label: string }[] = [
+  { value: "assignments", label: "Assignments" },
+  { value: "tests", label: "Tests and quizzes" },
+  { value: "overdue", label: "Overdue assignments" },
+  { value: "completed", label: "Completed assignments" },
+];
 
 /**
  * The calendar feed is read-only, so "done" has nowhere server-side to live.
@@ -58,6 +69,7 @@ export function HomeworkBoard({
 }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [courseFilter, setCourseFilter] = useState<string | null>(null);
+  const [category, setCategory] = useState<Category>("assignments");
 
   // Empty on the server render; filled in once the browser's copy loads.
   useEffect(() => {
@@ -85,13 +97,42 @@ export function HomeworkBoard({
     a.localeCompare(b),
   );
 
-  const visibleRows = courseFilter ? rows.filter((r) => r.course === courseFilter) : rows;
+  // "Assignments" is the full list; the other three are views onto it, not a
+  // strict partition — a completed quiz still shows up under Tests, etc.
+  const categoryRows = rows.filter((r) => {
+    switch (category) {
+      case "tests": return isTestOrQuiz(r.title, r.description);
+      case "overdue": return (r.daysUntil ?? 99) < 0 && !completed.has(r.uid);
+      case "completed": return completed.has(r.uid);
+      default: return true;
+    }
+  });
+
+  const visibleRows = courseFilter
+    ? categoryRows.filter((r) => r.course === courseFilter)
+    : categoryRows;
   const newCount = visibleRows.filter((r) => r.isNew).length;
   const groups = groupByUrgency(visibleRows, completed);
   const headline = headlineCount(visibleRows, completed);
 
   return (
-    <main className="page">
+    <div className="layout">
+      <aside className="sidebar">
+        <p className="sidebar-label">View</p>
+        <select
+          className="sidebar-select"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as Category)}
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+      </aside>
+
+      <main className="page">
       <header className="masthead">
         <p className="eyebrow">BCIT Learning Hub</p>
 
@@ -163,8 +204,14 @@ export function HomeworkBoard({
 
       {available && hasPayload && groups.length === 0 && (
         <div className="panel">
-          <h2>All clear</h2>
-          <p>Nothing outstanding in your Learning Hub calendar right now.</p>
+          <h2>{category === "assignments" ? "All clear" : "Nothing here"}</h2>
+          <p>
+            {category === "assignments"
+              ? "Nothing outstanding in your Learning Hub calendar right now."
+              : `No items match "${CATEGORIES.find((c) => c.value === category)?.label}"${
+                  courseFilter ? ` for ${courseFilter}` : ""
+                } right now.`}
+          </p>
         </div>
       )}
 
@@ -191,6 +238,7 @@ export function HomeworkBoard({
         <span>Checked every morning from your Brightspace calendar feed.</span>
         <span>Only items with a due date appear here.</span>
       </footer>
-    </main>
+      </main>
+    </div>
   );
 }
