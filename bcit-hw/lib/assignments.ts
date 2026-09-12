@@ -70,11 +70,16 @@ export function splitCourse(
   if (sep !== -1) {
     const head = summary.slice(0, sep).trim();
     const tail = summary.slice(sep + 3).trim();
+    const tailIsCourseCode = COURSE_CODE.test(tail);
     // Only treat the tail as a course name if it reads like one, not like
     // part of the assignment title ("Essay - Draft Due" must stay intact).
-    if (tail.length <= 60 && (COURSE_CODE.test(tail) || !looksLikeWork(tail))) {
+    if (tail.length <= 60 && (tailIsCourseCode || !looksLikeWork(tail))) {
       title = head;
-      course = course || tail;
+      // Brightspace also appends status suffixes ("- Available",
+      // "- Availability Ends") that pass the same "doesn't look like work"
+      // check but aren't a course — only trust the tail as one with an
+      // actual course code as evidence.
+      if (tailIsCourseCode) course = course || tail;
     }
   }
 

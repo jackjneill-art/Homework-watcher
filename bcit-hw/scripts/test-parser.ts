@@ -29,6 +29,28 @@ const folded = parseFeed(foldedFeed);
 check("unfolds wrapped course code", folded["folded@learn.bcit.ca"].course, "COMM 1100");
 check("splits title from course", folded["folded@learn.bcit.ca"].title, "Assignment 1: Memo Writing is due");
 
+/* ---- Brightspace status suffixes aren't course names ---- */
+// Real feed data: "... - Available" and "... - Availability Ends" pass the
+// "doesn't look like work" check the same way a real course name would, but
+// they carry no course code, so they must not end up as the course.
+const availabilityFeed = `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:avail@x
+SUMMARY:Active Learner Quiz: Module 2- Requires Respondus LockDown Browser - Available
+DTSTART:20260908T120000
+END:VEVENT
+BEGIN:VEVENT
+UID:availends@x
+SUMMARY:Week 1: A Sales Career? - Availability Ends
+DTSTART:20260913T235900
+DESCRIPTION:There is a quiz on page 18.
+END:VEVENT
+END:VCALENDAR`;
+const availability = parseFeed(availabilityFeed);
+check("status suffix is not a course", availability["avail@x"].course, "");
+check("status suffix stripped from title", availability["avail@x"].title, "Active Learner Quiz: Module 2- Requires Respondus LockDown Browser");
+check("'Availability Ends' is not a course", availability["availends@x"].course, "");
+
 /* ---- filtering out timetabled classes ---- */
 const mixed = `BEGIN:VCALENDAR
 BEGIN:VEVENT
