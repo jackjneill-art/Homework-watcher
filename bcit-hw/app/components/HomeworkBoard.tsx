@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   groupByUrgency,
   headlineCount,
@@ -47,18 +47,17 @@ function lastCheckedLabel(iso: string | null): string {
 
 export function HomeworkBoard({
   rows,
-  newCount,
   lastChecked,
   available,
   hasPayload,
 }: {
   rows: AssignmentRow[];
-  newCount: number;
   lastChecked: string | null;
   available: boolean;
   hasPayload: boolean;
 }) {
   const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [courseFilter, setCourseFilter] = useState<string | null>(null);
 
   // Empty on the server render; filled in once the browser's copy loads.
   useEffect(() => {
@@ -79,14 +78,17 @@ export function HomeworkBoard({
     });
   }
 
-  const groups = groupByUrgency(rows, completed);
-  const headline = headlineCount(rows, completed);
-
-  // Same colour rule the cards use (courseColorIndex), just listed once
-  // instead of re-derived from every card.
+  // The legend lists every course from the full list regardless of the
+  // active filter, so switching between courses doesn't make other courses
+  // disappear from the picker.
   const courses = [...new Set(rows.map((r) => r.course).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b),
   );
+
+  const visibleRows = courseFilter ? rows.filter((r) => r.course === courseFilter) : rows;
+  const newCount = visibleRows.filter((r) => r.isNew).length;
+  const groups = groupByUrgency(visibleRows, completed);
+  const headline = headlineCount(visibleRows, completed);
 
   return (
     <main className="page">
@@ -104,18 +106,35 @@ export function HomeworkBoard({
         <p className="substat">
           <span>{lastCheckedLabel(lastChecked)}</span>
           {newCount > 0 && <span className="dot-sep">{newCount} new since yesterday</span>}
-          {rows.length > 0 && <span className="dot-sep">{rows.length} tracked</span>}
+          {visibleRows.length > 0 && <span className="dot-sep">{visibleRows.length} tracked</span>}
         </p>
 
         {courses.length > 0 && (
           <ul className="legend">
+            <li>
+              <button
+                type="button"
+                className={`legend-item${courseFilter === null ? " is-active" : ""}`}
+                onClick={() => setCourseFilter(null)}
+              >
+                All
+              </button>
+            </li>
             {courses.map((course) => (
-              <li className="legend-item" key={course}>
-                <span
-                  className="legend-swatch"
-                  style={{ background: COURSE_COLORS[courseColorIndex(course)] }}
-                />
-                {course}
+              <li key={course}>
+                <button
+                  type="button"
+                  className={`legend-item${courseFilter === course ? " is-active" : ""}`}
+                  style={{ "--course-color": COURSE_COLORS[courseColorIndex(course)] } as CSSProperties}
+                  onClick={() => setCourseFilter(courseFilter === course ? null : course)}
+                  aria-pressed={courseFilter === course}
+                >
+                  <span
+                    className="legend-swatch"
+                    style={{ background: COURSE_COLORS[courseColorIndex(course)] }}
+                  />
+                  {course}
+                </button>
               </li>
             ))}
           </ul>

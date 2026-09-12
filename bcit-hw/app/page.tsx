@@ -12,12 +12,10 @@ export default async function Page() {
   // Anything already past its due date drops off after a week — keeps stale
   // items from permanently colonising the top of the page.
   const visible = rows.filter((r) => r.daysUntil === null || r.daysUntil > -8);
-  const newCount = visible.filter((r) => r.isNew).length;
 
   return (
     <HomeworkBoard
       rows={visible}
-      newCount={newCount}
       lastChecked={payload?.updated ?? null}
       available={available}
       hasPayload={Boolean(payload)}
