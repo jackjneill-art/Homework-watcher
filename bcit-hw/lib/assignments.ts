@@ -44,6 +44,23 @@ const WORK_HINTS = [
 /** Matches BCIT-style course codes, e.g. COMM 1100 / MKTG1102. */
 const COURSE_CODE = /\b([A-Z]{4}\s?\d{4})\b/;
 
+/**
+ * Some Brightspace calendars never put a readable course code anywhere in
+ * the feed — no code in the title, no CATEGORIES. The one thing that does
+ * reliably tell two courses apart is the numeric org unit id Brightspace
+ * embeds in every "View event" link (?ou=253727). Fill in real names here
+ * as you learn which id is which course; unknown ids fall back to the
+ * number itself so grouping/coloring still works before you do.
+ */
+const ORG_UNIT = /\bou=(\d+)\b/;
+export const ORG_UNIT_NAMES: Record<string, string> = {};
+
+function courseFromOrgUnit(description: string): string {
+  const match = ORG_UNIT.exec(description);
+  if (!match) return "";
+  return ORG_UNIT_NAMES[match[1]] ?? `Course ${match[1]}`;
+}
+
 export function looksLikeWork(title: string, description = ""): boolean {
   const blob = `${title} ${description}`.toLowerCase();
   return WORK_HINTS.some((hint) => blob.includes(hint));
@@ -110,7 +127,8 @@ export function normalize(
 
     const dueDate =
       (ev.DUE as Date | null) || (ev.DTEND as Date | null) || (ev.DTSTART as Date | null);
-    const { title, course } = splitCourse(summary, description, categories);
+    const { title, course: textCourse } = splitCourse(summary, description, categories);
+    const course = textCourse || courseFromOrgUnit(description);
 
     const uid =
       (typeof ev.UID === "string" && ev.UID) ||

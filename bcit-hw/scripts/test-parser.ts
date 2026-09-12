@@ -51,6 +51,21 @@ check("status suffix is not a course", availability["avail@x"].course, "");
 check("status suffix stripped from title", availability["avail@x"].title, "Active Learner Quiz: Module 2- Requires Respondus LockDown Browser");
 check("'Availability Ends' is not a course", availability["availends@x"].course, "");
 
+/* ---- org-unit fallback when the feed has no course code at all ---- */
+// BCIT's real feed for some calendars never puts a course code in the title
+// or CATEGORIES — the numeric org unit id in the "View event" link is the
+// only thing that tells two courses apart.
+const orgUnitFeed = `BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:ou1@x
+SUMMARY:Week 1: A Sales Career?
+DTSTART:20260913T235900
+DESCRIPTION:On page 18 there is a quiz. View event - https://learn.bcit.ca/d2l/le/calendar/1239803/event/1/detailsview?ou=1239803#1
+END:VEVENT
+END:VCALENDAR`;
+const orgUnit = parseFeed(orgUnitFeed);
+check("falls back to org unit id when no course code exists", orgUnit["ou1@x"].course, "Course 1239803");
+
 /* ---- filtering out timetabled classes ---- */
 const mixed = `BEGIN:VCALENDAR
 BEGIN:VEVENT
