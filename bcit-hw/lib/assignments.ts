@@ -58,6 +58,7 @@ export const ORG_UNIT_NAMES: Record<string, string> = {
   "1239803": "Professional Sales Skills and Customer Relationship Management",
   "1230765": "Business Communication",
   "1230837": "Business Math",
+  "1233493": "Business Info Systems",
 };
 
 function courseFromOrgUnit(description: string): string {
